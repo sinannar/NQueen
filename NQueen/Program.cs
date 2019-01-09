@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace NQueen
 {
     public static class Program
     {
-        public static int tableSize = 9;
+        public static int tableSize = 4;
         public static char[,] table = new char[tableSize, tableSize];
+        public static List<char[,]> tableHistory = new List<char[,]>();
         public static char Queen = 'Q';
         public static char CanNotMove = '.';
         public static char CanMove = ' ';
@@ -16,12 +19,59 @@ namespace NQueen
             var x = r.Next() % tableSize;
             var y = r.Next() % tableSize;
 
-            InitBoard(x, y);
-            PrintBoard();
+            InitBoard(table, x, y);
+            tableHistory.Add(CloneBoard(table));
+
+            PrintBoard(table);
+           
+
+            while (CountGivenChar(CanMove,table) > 0)
+            {
+                var available = ListGivenCharPositions(CanMove, table);
+                var next = r.Next() % available.Count;
+
+                table[available[next].Item1, available[next].Item2] = Queen;
+                MarkCanNotMovePlaces(table, available[next].Item1, available[next].Item2);
+                PrintBoard(table);
+            }
+            PrintBoard(table, false);
             Console.ReadKey();
+
         }
 
-        public static void InitBoard(int x = 0, int y = 0)
+        public static int CountGivenChar(char ch, char[,] table)
+        {
+            int count = 0;
+            for (int i = 0; i < tableSize; i++)
+            {
+                for (int j = 0; j < tableSize; j++)
+                {
+                    if(table[i,j]==ch)
+                    {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+
+        public static List<(int,int)> ListGivenCharPositions(char ch, char[,] table)
+        {
+            var r = new List<(int,int)>();
+            for (int i = 0; i < tableSize; i++)
+            {
+                for (int j = 0; j < tableSize; j++)
+                {
+                    if (table[i, j] == ch)
+                    {
+                        r.Add((i,j));
+                    }
+                }
+            }
+            return r;
+        }
+
+        public static void InitBoard(char[,] table, int x = 0, int y = 0)
         {
             for (int i = 0; i < tableSize; i++)
             {
@@ -38,10 +88,23 @@ namespace NQueen
                     }
                 }
             }
-            MarkCanNotMovePlaces(x, y);
+            MarkCanNotMovePlaces(table, x, y);
         }
 
-        public static void PrintBoard()
+        public static char[,] CloneBoard(char[,] table)
+        {
+            var t = new char[tableSize, tableSize];
+            for (int i = 0; i < tableSize; i++)
+            {
+                for (int j = 0; j < tableSize; j++)
+                {
+                    t[i, j] = table[i, j];
+                }
+            }
+            return t;
+        }
+
+        public static void PrintBoard(char[,] table, bool clean = true)
         {
             for (int i = -1; i < tableSize + 1; i++)
             {
@@ -59,9 +122,14 @@ namespace NQueen
                 }
                 Console.WriteLine('|');
             }
+            if (clean)
+            {
+                Thread.Sleep(100);
+                Console.Clear();
+            }
         }
 
-        public static void MarkCanNotMovePlaces(int x = 0, int y = 0)
+        public static void MarkCanNotMovePlaces(char[,] table, int x = 0, int y = 0)
         {
             for (int i = 0; i < tableSize; i++)
             {
