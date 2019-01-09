@@ -6,37 +6,45 @@ namespace NQueen
 {
     public static class Program
     {
-        public static int tableSize = 4;
-        public static char[,] table = new char[tableSize, tableSize];
-        public static List<char[,]> tableHistory = new List<char[,]>();
+        public static int tableSize = 30;
+        public static List<List<char[,]>> solutionHistory = new List<List<char[,]>>();
         public static char Queen = 'Q';
         public static char CanNotMove = '.';
         public static char CanMove = ' ';
+        public static Random random = new Random();
 
         public static void Main(string[] args)
         {
-            var r = new Random();
-            var x = r.Next() % tableSize;
-            var y = r.Next() % tableSize;
+            bool solved = false;
+            do {
+                var t = TryToSolve();
+                solved = t.Item1;
+                solutionHistory.Add(t.Item2);
+                PrintBoard(t.Item3, solved == false);
+            } while (solved == false);
+            Console.ReadKey();
+        }
+
+        public static (bool, List<char[,]>, char[,]) TryToSolve()
+        {
+            char[,] table = new char[tableSize, tableSize];
+            List<char[,]> tableHistory = new List<char[,]>();
+            var x = random.Next() % tableSize;
+            var y = random.Next() % tableSize;
 
             InitBoard(table, x, y);
             tableHistory.Add(CloneBoard(table));
 
-            PrintBoard(table);
-           
-
-            while (CountGivenChar(CanMove,table) > 0)
+            while (CountGivenChar(CanMove, table) > 0)
             {
                 var available = ListGivenCharPositions(CanMove, table);
-                var next = r.Next() % available.Count;
+                var next = random.Next() % available.Count;
 
                 table[available[next].Item1, available[next].Item2] = Queen;
                 MarkCanNotMovePlaces(table, available[next].Item1, available[next].Item2);
-                PrintBoard(table);
-            }
-            PrintBoard(table, false);
-            Console.ReadKey();
 
+            }
+            return (CountGivenChar(Queen, table) == tableSize, tableHistory,table);
         }
 
         public static int CountGivenChar(char ch, char[,] table)
