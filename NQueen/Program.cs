@@ -12,7 +12,11 @@ namespace NQueen
 
         public static void Main(string[] args)
         {
-            InitBoard(3, 3);
+            var r = new Random();
+            var x = r.Next() % tableSize;
+            var y = r.Next() % tableSize;
+
+            InitBoard(x, y);
             PrintBoard();
             Console.ReadKey();
         }
